@@ -113,7 +113,7 @@ public:
 		rectangles.push_back({ {x1, y1}, {x2, y2} });
 		update_Board();
 	}
-
+	/*
 	void update_Board() {
 		// Corrected the loop to iterate over the vector of rectangles
 		for (int i = 0; i < Current_Board_Size; ++i) {
@@ -134,6 +134,34 @@ public:
 			++weidth;
 		}
 	}
+	*/
+	void update_Board() {
+		for (int i = 0; i < Current_Board_Size; ++i) {
+			for (int j = 0; j < Current_Board_Size; ++j) {
+				Board_Plate[i][j] = 0;
+			}
+		}
+
+		int value_to_add = 1;
+		for (const auto& rect : rectangles) {
+			int x1 = rect.first.first;
+			int y1 = rect.first.second;
+			int x2 = rect.second.first;
+			int y2 = rect.second.second;
+
+			for (int i = y1; ; i = (i + 1) % Current_Board_Size) {
+				for (int j = x1; ; j = (j + 1) % Current_Board_Size) {
+					if (j >= 0 && j < Current_Board_Size && i >= 0 && i < Current_Board_Size) {
+						Board_Plate[i][j] += value_to_add;
+					}
+					if (j == x2) break;
+				}
+				if (i == y2) break;
+			}
+
+			value_to_add++;
+		}
+	}
 
 	void extend_Board() {
 		if (Current_Board_Size < Max_Board_Size) {
@@ -142,15 +170,22 @@ public:
 		else {
 			Error_Flag = 8;
 		}
+		update_Board();
 	}
 	void reduce_Board() {
-		if (Current_Board_Size > 10) {
-
-			--Current_Board_Size;
-		}
-		else {
+		if (Current_Board_Size <= 10) {
 			Error_Flag = 6;
+			return;
 		}
+		int new_board_size = Current_Board_Size - 1;
+		for (const auto& rect : rectangles) {
+			if (rect.second.first >= new_board_size || rect.second.second >= new_board_size) {
+				Error_Flag = 7;
+				return;
+			}
+		}
+
+		--Current_Board_Size;
 	}
 	int get_Current_Board_Size() const {
 		return Current_Board_Size;
